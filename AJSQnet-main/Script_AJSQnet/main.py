@@ -114,7 +114,7 @@ def Train_Validate(dataload, net, epoch, optimizer, savedir, if_save=False):
         loss_la, loss_sdf_la, loss_scar, loss_scar_m1, loss_scar_m2 = F_loss_scar(output, lgelabel, lgedist, lgeprob_normal, lgeprob_scar)
         weight_sdm = 1e-2*(1.05**(epoch//10))
         weight_scar = 1e-2*(1.05**(epoch//10))
-        loss = loss_la + weight_sdm*loss_sdf_la + 10*loss_scar  + 0.01*loss_scar_m1 + 0.01*loss_scar_m2
+        loss = loss_la + weight_sdm*loss_sdf_la + 10*loss_scar  + 0.01*loss_scar_m1 + 0.001*loss_scar_m2
 
         loss.backward()
         optimizer.step()
