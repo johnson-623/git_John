@@ -31,6 +31,27 @@ def evaluate(args):
         print('evaluating test data: ' + CaseName)
 
         if args.eval_LAcavity:
+            root_path=args.datapath
+            pre_LAscar_name=args.pre_LAscar_name
+            gt_LAscar_name=args.gt_LAscar_name
+            items=glob.glob(os.path.join(root_path,'*'))
+            case_list=[]
+            dc_list=[]
+            for item in items:
+                case_list.append(item.split('/')[-1])
+                pre_path=os.path.join(item,pre_LAscar_name)
+                gt_path=os.path.join(item,gt_LAscar_name)
+                pre_arr=sitk_load_img(pre_path)
+                gt_arr=sitk_load_img(gt_path)
+                pre_arr[pre_arr<=421]=0
+                pre_arr[pre_arr==422]=1
+        
+                dc_list.append(cal_dc(pre_arr,gt_arr))
+            save_path=args.save_file
+            #list={'Casename':case_list,'LAscar_Dice':dc_list}
+            #df=pd.DataFrame(list)
+            #df.to_csv(save_path, encoding='gbk', index=False)
+            '''
             gt_LAcavity_volume_name = 'atriumSegImgMO.nii.gz'
             pre_LAcavity_volume_name = args.pre_LAcavity_name
             # evaluate LA cavity segmentation: Dice, ASD, HD
@@ -84,16 +105,17 @@ def evaluate(args):
             LAscar_Senlist.append(LAscar_Sen_3d)
             LAscar_Dicelist.append(LAscar_Dice_3d)
             LAscar_GDicelist.append(LAscar_GDice_3d)
+            '''
 
     if args.eval_LAcavity:
         list = {'Casename': Casename_list, 'LAcavity_Dice': LAcavity_Dicelist, 'LAcavity_ASD': LAcavity_ASDlist, 'LAcavity_HD': LAcavity_HDlist}
         df = pd.DataFrame(list)
         df.to_csv(script_path + '/LAcavity_evaluate_result.csv', encoding='gbk', index=False)
 
-    if args.eval_LAscar:
-        list = {'Casename': Casename_list, 'LAscar_Acc': LAscar_Acclist, 'LAscar_Spe': LAscar_Spelist, 'LAscar_Sen': LAscar_Senlist, 'LAscar_Dice': LAscar_Dicelist, 'LAscar_GDice': LAscar_GDicelist}
+    if args.eval_LAcavity and args.eval_LAscar:
+        list = {'Casename': Casename_list, 'LAcavity_Dice': LAcavity_Dicelist, 'LAcavity_ASD': LAcavity_ASDlist, 'LAcavity_HD': LAcavity_HDlist,'LAscar_Dice':dc_list}
         df = pd.DataFrame(list)
-        df.to_csv(script_path + '/LAscar_evaluate_result.csv', encoding='gbk', index=False)
+        df.to_csv(script_path + '/JSQ_evaluate_result.csv', encoding='gbk', index=False)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -103,6 +125,8 @@ if __name__ == "__main__":
     parser.add_argument('--eval_LAscar', type=bool, default=False)
     parser.add_argument('--pre_LAcavity_name', type=str, default='LA_predict.nii.gz')
     parser.add_argument('--pre_LAscar_name', type=str, default='scar_predict.nii.gz')
+    parser.add_argument('--gt_LAscar_name', type=str, default='LA_predict.nii.gz')
+    parser.add_argument('--save_file',type=str,default='LAscar_evaluate_result.csv')
     args = parser.parse_args()
     #print(args)
     evaluate(args)
